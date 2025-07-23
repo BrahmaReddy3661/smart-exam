@@ -9,27 +9,28 @@ let timeLeft = timerDuration;
 
 async function loadExcelFromServer() {
   try {
-    const res = await fetch("questions.xlsx");
+    const res = await fetch("/static/questions.xlsx");
     if (!res.ok) throw new Error("Failed to load Excel file");
 
     const buffer = await res.arrayBuffer();
     const workbook = XLSX.read(buffer, { type: "array" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    // ✅ Load raw rows (no header)
+    // Load rows as arrays (no header)
     questions = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    // Remove empty rows if any
+    // Filter out empty or incomplete rows
     questions = questions.filter(row => row.length >= 6);
 
     questionStates = Array(questions.length).fill("gray");
     renderSidebar();
     loadQuestion(0);
   } catch (err) {
-    console.error("❌ Error loading questions.xlsx:", err);
+    console.error("Error loading questions.xlsx:", err);
     alert("Failed to load questions.");
   }
 }
+
 
 function renderSidebar() {
   const list = document.getElementById("question-list");
