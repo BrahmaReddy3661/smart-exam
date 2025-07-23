@@ -4,7 +4,7 @@ let selectedAnswers = {};
 let lockedQuestions = new Set();
 let questionStates = [];
 
-const timerDuration = 60 * 10; // 10 minutes
+const timerDuration = 60 * 10;
 let timeLeft = timerDuration;
 
 async function loadExcelFromServer() {
@@ -15,13 +15,9 @@ async function loadExcelFromServer() {
     const buffer = await res.arrayBuffer();
     const workbook = XLSX.read(buffer, { type: "array" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-    // Load rows as arrays (no header)
     questions = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    // Filter out empty or incomplete rows
     questions = questions.filter(row => row.length >= 6);
-
     questionStates = Array(questions.length).fill("gray");
     renderSidebar();
     loadQuestion(0);
@@ -30,7 +26,6 @@ async function loadExcelFromServer() {
     alert("Failed to load questions.");
   }
 }
-
 
 function renderSidebar() {
   const list = document.getElementById("question-list");
@@ -49,31 +44,33 @@ function renderSidebar() {
 
 function loadQuestion(index) {
   currentQuestion = index;
-  const q = questions[index]; // q = [Question, A, B, C, D, Answer]
+  const examBox = document.querySelector(".exam-box");
 
-  // Set question number
+if (lockedQuestions.has(index)) {
+  examBox.classList.add("locked");
+} else {
+  examBox.classList.remove("locked");
+}
+
+  const q = questions[index];
+  if (!q || q.length < 6) return;
+
   document.getElementById("question-number").textContent = `Question ${index + 1} of ${questions.length}`;
 
-  // Set question text
   const qText = document.getElementById("question-text");
-  qText.textContent = q[0];
-
-  // Restart vertical scroll animation
   qText.style.animation = "none";
-  qText.offsetHeight; // Force reflow
-  qText.style.animation = "scrollQuestion 10s linear infinite"; // Reapply animation
+  qText.offsetHeight;
+  qText.textContent = q[0];
+  qText.style.animation = "scrollLeftToRight 15s linear infinite";
 
-  // Set options
   document.getElementById("optA").textContent = q[1];
   document.getElementById("optB").textContent = q[2];
   document.getElementById("optC").textContent = q[3];
   document.getElementById("optD").textContent = q[4];
 
-  // Update radio buttons
   document.querySelectorAll("input[name='option']").forEach((input) => {
     input.disabled = lockedQuestions.has(index);
     input.checked = selectedAnswers[index] === input.value;
-
     input.onclick = () => {
       selectedAnswers[index] = input.value;
       questionStates[index] = "green";
@@ -87,7 +84,6 @@ function loadQuestion(index) {
 
   renderSidebar();
 }
-
 
 document.getElementById("nextBtn").onclick = () => {
   if (currentQuestion < questions.length - 1) loadQuestion(currentQuestion + 1);
@@ -129,3 +125,28 @@ function submitExam() {
 
 const timerInterval = setInterval(updateTimer, 1000);
 loadExcelFromServer();
+// 🚫 Disable right-click
+document.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+});
+
+// 🚫 Disable Ctrl+C, Ctrl+U, F12, etc.
+document.addEventListener("keydown", function (e) {
+  if (
+    (e.ctrlKey && (e.key === "c" || e.key === "u" || e.key === "s")) ||
+    e.key === "F12" ||
+    (e.ctrlKey && e.shiftKey && e.key === "I")
+  ) {
+    e.preventDefault();
+  }
+});
+// 🚨 Lock question if mouse leaves exam area
+document.getElementById("exam-area").addEventListener("mouseleave", () => {
+  if (!lockedQuestions.has(currentQuestion)) {
+    alert("Mouse left exam area! This question is now locked.");
+    lockedQuestions.add(currentQuestion);
+    questionStates[currentQuestion] = "black";
+    loadQuestion(currentQuestion);
+  }
+});
+
