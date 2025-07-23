@@ -8,22 +8,20 @@
   <script src="script.js" defer></script>
 </head>
 <body>
-  <div id="timer">Time Left: <span id="time">--:--</span></div>
+  <div id="timer">Time Left: <span id="time">--:--</span>
 
-  <div class="container">
+  <div class="container" id="exam-area">
+
     <!-- Sidebar with question numbers -->
-    <div class="sidebar" id="question-list">
-      <!-- Buttons like Q1, Q2... will be rendered by JS -->
-    </div>
+    <div class="sidebar" id="question-list"></div>
 
-    <!-- Main question area -->
+    <!-- Exam content -->
     <div class="exam-box">
       <div class="question-display">
-
-        <!-- Question number label -->
+        <!-- Question number -->
         <div id="question-number" class="question-number"></div>
 
-        <!-- Question box: half-size and scrollable -->
+        <!-- Scrolling question field -->
         <div class="question-box">
           <div id="question-text" class="question-text"></div>
         </div>
@@ -37,13 +35,14 @@
         </div>
       </div>
 
-      <!-- Navigation buttons -->
+      <!-- Navigation -->
       <div class="nav-buttons">
         <button id="prevBtn">Previous</button>
         <button id="nextBtn">Next</button>
         <button id="submitBtn">Submit</button>
       </div>
     </div>
+  </div>
   </div>
 </body>
 </html>
